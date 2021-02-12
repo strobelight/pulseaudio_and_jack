@@ -1,0 +1,37 @@
+#!/bin/bash
+
+PATH=$HOME/bin:$PATH
+
+LOGFILE=$HOME/.log/jack/startJack.log
+exec >> $LOGFILE
+exec 2>&1
+
+mkdir -p $(dirname $LOGFILE)
+echo "`date`: Starting jack"
+while pgrep -f start-pulseaudio-x11; do
+    echo "start-pulseaudio-x11 still running, sleep"
+    sleep 5
+done
+date
+
+checkjack
+
+# cat /proc/asound/cards
+#     0 [Microphone     ]: USB-Audio - Yeti Stereo Microphone
+#                          Blue Microphones Yeti Stereo Microphone at usb-0000:2f:00.3-1, full speed
+#     1 [HDMI           ]: HDA-Intel - HDA ATI HDMI
+#                          HDA ATI HDMI at 0xfcf60000 irq 151
+#     2 [Generic        ]: HDA-Intel - HD-Audio Generic
+#                          HD-Audio Generic at 0xfcc00000 irq 153
+#     3 [Camera         ]: USB-Audio - USB2.0 HD UVC AF Camera
+#                          Chicony USB2.0 HD UVC AF Camera at usb-0000:2f:00.3-3, high speed
+#
+#   -C is default capture device
+#   -P is default playback device
+#
+#   best to use name instead of slot # as the slot # can change between reboots
+nohup jackd -R -d alsa -n 3 -p 4096 -r 44100 -Xraw -D -o2 -C hw:Microphone -P hw:Generic &
+sleep 2
+setupJack
+checkjack
+date

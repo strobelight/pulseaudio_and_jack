@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# run this script after jackd startup
+
+# sinks are outputs, sources are inputs
+
+# see bottom of script for setting up other devices
+
+logit() {
+    XTRACE=$(echo $-|grep x);set +x
+    msg="$*"
+    msgLen=${#msg}
+    SPACER=`eval "printf \%${msgLen}s "`
+    LOGSEP=`printf %30s | tr " " "#"`
+    newMsg="$LOGSEP $msg $LOGSEP"
+    newMsgBlank="$LOGSEP $SPACER $LOGSEP"
+    msgLen=${#newMsg}
+    LOGSEP=`eval "printf \%${msgLen}s | tr \" \" \"#\""`
+    echo
+    echo $LOGSEP
+    echo $LOGSEP
+    echo "$newMsgBlank"
+    echo "$newMsg"
+    echo "$newMsgBlank"
+    echo $LOGSEP
+    echo $LOGSEP
+    echo
+    [ -n "$XTRACE" ] && set -x || true
+}
+
+logit "set up jack"
+
+# set default audio in/out to JACK
+# expects JACK server to have already been started (/usr/bin/jackdbus auto #)
+#pacmd set-default-sink jack_out
+#pacmd set-default-source jack_in
+
+#sleep 2
+
+# set pulseaudio bridge to JACK 
+
+pactl load-module  module-jack-sink channels=2 
+pactl load-module  module-jack-source channels=2 
+#pactl load-module  module-loopback source=jack_in sink=hw:Generic
+#pactl load-module  module-loopback source=jack_in sink=alsa_output.pci-0000_2f_00.4.analog-stereo
+
+sleep .5
+
+# cat /proc/asound/cards
+#     0 [Microphone     ]: USB-Audio - Yeti Stereo Microphone
+#                          Blue Microphones Yeti Stereo Microphone at usb-0000:2f:00.3-1, full speed
+#     1 [HDMI           ]: HDA-Intel - HDA ATI HDMI
+#                          HDA ATI HDMI at 0xfcf60000 irq 151
+#     2 [Generic        ]: HDA-Intel - HD-Audio Generic
+#                          HD-Audio Generic at 0xfcc00000 irq 153
+#     3 [Camera         ]: USB-Audio - USB2.0 HD UVC AF Camera
+#                          Chicony USB2.0 HD UVC AF Camera at usb-0000:2f:00.3-3, high speed
+# alsa_in -j Yeti_Mic -d hw:CARD=Microphone,DEV=[0-9] -r 44100 > /dev/null &
+
+# set up other input devices to use with jack
+#alsa_in -j Yeti_Mic -d hw:CARD=Microphone -r 44100 > /dev/null &
+#sleep .5
+alsa_in -j Camera_Mic -d hw:CARD=Camera -r 44100 > /dev/null &
+sleep .5
+
+
+# set up other output devices to use with jack
+alsa_out -j Yeti_Out -d hw:CARD=Microphone -r 44100 > /dev/null &
+sleep .5
+alsa_out -j Screen_Out -d hw:CARD=HDMI -r 44100 > /dev/null &
+#sleep .5
+#alsa_out -j Headphone_Out -d hw:CARD=Generic -r 44100 > /dev/null &
+
+sleep 2
+
+logit "done setupjack"
+

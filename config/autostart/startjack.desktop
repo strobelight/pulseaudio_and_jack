@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.1.1
+Type=Application
+Name=qjackctl
+Comment=qjackctl starter
+Exec=$HOME/bin/startJack
+StartupNotify=false
+Terminal=false
+Hidden=false

@@ -1,0 +1,5 @@
+< set-default-sink alsa_output.pci-0000_2f_00.4.analog-stereo
+< set-default-source alsa_input.usb-Blue_Microphones_Yeti_Stereo_Microphone_REV8-00.analog-stereo
+---
+> #set-default-sink output
+> #set-default-source input
